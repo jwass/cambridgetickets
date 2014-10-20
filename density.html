@@ -1,0 +1,52 @@
+<html>
+  <head>
+    <title>Leaflet.heat demo</title>
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css" />
+    <script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
+    <script src='https://api.tiles.mapbox.com/mapbox.js/plugins/leaflet-heat/v0.1.0/leaflet-heat.js'></script>
+    <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script src="js/colorbrewer.js"></script>
+    <style>
+      #map { width: 100%; height: 800px; }
+    </style>
+  </head>
+
+  <body>
+    <div id="map"></div>
+
+    <script>
+      var map = L.map('map', {maxZoom: 17}).setView([42.373066, -71.120252], 12);
+
+    L.tileLayer('http://tiles.mapc.org/basemap/{z}/{x}/{y}.png',
+    {
+      attribution: 'Tiles by <a href="http://mapc.org">MAPC</a>, Data by <a href="http://mass.gov/mgis">MassGIS</a>',
+      maxZoom: 17,
+      minZoom: 9
+    }).addTo(map);
+
+      $.getJSON("data/zoom_ticket_densities.json", function( data ) {
+        var quantize = d3.scale.quantile().domain([0, 150]).range(colorbrewer.Reds[9]);
+        var densityLayer;
+        var draw = function() {
+          if (densityLayer) {
+            map.removeLayer(densityLayer);
+          }
+    
+          var z = map.getZoom();
+          if (data[z+4]) {
+            densityLayer = L.geoJson(data[z+4], {style: function (f) { 
+                return { color: 'none', 
+                         fillOpacity: 0.8,
+                         fillColor: quantize(f.properties.density) };
+              }
+            });
+            densityLayer.addTo(map);
+          }
+        };
+        map.on('zoomend', draw );
+        draw();
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,40 @@
+<html>
+  <head>
+    <title>Leaflet.heat demo</title>
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css" />
+    <script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
+    <script src='https://api.tiles.mapbox.com/mapbox.js/plugins/leaflet-heat/v0.1.0/leaflet-heat.js'></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <style>
+      #map { width: 100%; height: 800px; }
+    </style>
+  </head>
+
+  <body>
+    <div id="map"></div>
+
+    <script>
+      var map = L.map('map', {maxZoom: 21}).setView([42.373066, -71.120252], 12);
+      //var map = L.map('map').setView([0, 0], 2);
+
+    L.tileLayer('http://tiles.mapc.org/basemap/{z}/{x}/{y}.png',
+    {
+      attribution: 'Tiles by <a href="http://mapc.org">MAPC</a>, Data by <a href="http://mass.gov/mgis">MassGIS</a>',
+      maxZoom: 17,
+      minZoom: 9
+    }).addTo(map);
+
+      $.getJSON("data/meters_and_counts.geojson", function( data ) {
+        max = Math.max.apply(Math, data.features.map(function(f) {
+          return f.properties.count;
+        }));
+        var points = data.features.map(function (f) {
+          return new L.LatLng(f.geometry.coordinates[1],
+                              f.geometry.coordinates[0],
+                              f.properties.count / max);
+        });
+        var heat = L.heatLayer(points, {maxZoom: 18, radius: 20}).addTo(map);
+      });
+    </script>
+  </body>
+</html>
